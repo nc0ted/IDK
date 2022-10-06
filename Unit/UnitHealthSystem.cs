@@ -31,12 +31,6 @@ public class UnitHealthSystem : MonoBehaviour
         Invoke(nameof(SetSpeedBack),2f);
     }
 
-    private void SetSpeedBack()
-    {
-        if(_isDead)return;
-        _npcMovement.SetSpeed(6);
-    }
-
     private void Die()
     {
         _isDead = true;
@@ -51,5 +45,11 @@ public class UnitHealthSystem : MonoBehaviour
     private void DeactivateUnit()
     {
         gameObject.SetActive(false);
+    }
+    
+    private void SetSpeedBack()
+    {
+        if(_isDead)return;
+        _npcMovement.SetSpeed(6);
     }
 }

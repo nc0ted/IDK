@@ -53,7 +53,6 @@ namespace Grid
         private void Build()
         {
             if (Pathfinding.Instance.GetNode(gridX, gridY).HasWall) return;
-            print("BUild");
             var position = Pathfinding.Instance.GetGrid().GetWorldPosition(gridX, gridY) + new Vector3(1, 1) * 0.5f;
             var wall = Instantiate(currentPrefab, position, quaternion.identity);
             Pathfinding.Instance.GetNode(gridX, gridY).SetHasWall(!_isWalkable);

@@ -11,7 +11,6 @@ public class CommonTrap : MonoBehaviour
     {
         if (col.CompareTag("Enemy") && col.GetComponent<UnitHealthSystem>())
         {
-            print("collision");
             col.GetComponent<UnitHealthSystem>().TakeDamage(damage);
         }
     }
