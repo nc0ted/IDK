@@ -1,4 +1,3 @@
-using System;
 using UnityEngine;
 
 namespace Unit
@@ -6,11 +5,14 @@ namespace Unit
     [RequireComponent(typeof(Animator))]
     public class UnitAnimationSystem : MonoBehaviour
     {
-        [Tooltip("NOT READY, dont use")]
+        [Tooltip("This is more ready, use this")]
         [SerializeField] private bool useCustomAnimator;
+
+        
         private Animator _animator;
         private States _currentState;
-        private UnitCustomAnimations _customAnimations;
+        private UnitInitializer _unitInitializer;
+        private UnitCustomAnimations _unitCustomAnimations;
         public enum States
         {
             None,
@@ -22,9 +24,10 @@ namespace Unit
         {
             if (useCustomAnimator)
             {
-                _customAnimations = new UnitCustomAnimations();
-                _customAnimations.GetDefaultLocals(Vector3.zero, new Vector3(0,0.43f,0),Vector3.zero);
+                _unitInitializer = new UnitInitializer();
+                _unitInitializer.GetDefaultLocals(new Vector3(10.4f,9.6f,0), new Vector3(0,0.43f,0),Vector3.zero);
             }
+            _unitCustomAnimations = _unitInitializer._unitCustomAnimations;
             _animator = GetComponent<Animator>();
         }
 
@@ -32,7 +35,7 @@ namespace Unit
         {
             if (useCustomAnimator)
             {
-                _customAnimations.GetUnit(transform);
+                _unitInitializer.GetUnit(transform);
             }
             SetAnimationState(States.Idle);
         }
@@ -42,7 +45,7 @@ namespace Unit
             var animInfo = _animator.GetCurrentAnimatorStateInfo(0);
             if (animInfo.loop && _currentState == animationState) return;
             if(useCustomAnimator)
-                _customAnimations.PlayAnimation(animationState);
+                _unitCustomAnimations.PlayAnimation(animationState);
             else
                 _animator.Play(animationState.ToString());
             _currentState = animationState;

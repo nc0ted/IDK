@@ -5,39 +5,26 @@ using UnityEngine;
 using UnityEngine.Rendering.Universal;
 using static Unit.UnitAnimationSystem.States;
 using Task = System.Threading.Tasks.Task;
-using static AnimationsMath;
+using static Unit.AnimationsMath;
 
 namespace Unit
 {
     public class UnitCustomAnimations
     {
-        private Vector3 _bodyDefaultLocal, _headDefaultLocal, _apparelDefaultLocal;
-        private Transform _body, _head, _apparel;
-        private Light2D _hitLight;
-        private int _iteration;
-        private static bool stopAnimations;
+        public Material BodyMaterial { get; set; } 
+        public Material[] AllMaterials { get; set; }
+        public Vector3 BodyDefaultLocal { get; set; }
+        public Vector3 HeadDefaultLocal{ get; set; }
+        public Vector3 ApparelDefaultLocal{ get; set; }
+        public Transform Body{ get; set; }
+        public Transform Head{ get; set; } 
+        public Transform Apparel{ get; set; }
+        public Transform Hair { get; set; }
+        public Light2D HitLight{ get; set; }
+        private static readonly int MaterialProp = Shader.PropertyToID("_SourceGlowDissolveFade");
 
-        internal void GetDefaultLocals(Vector3 body,Vector3 head,Vector3 apparel)
-        {
-            _bodyDefaultLocal = body;
-            _headDefaultLocal = head;
-            _apparelDefaultLocal = apparel;
-        }
-        internal void GetUnit(Transform unit)
-        {
-            _body = unit;
-            _head = _body.Find("Head");
-            _apparel = _body.Find("Apparel");
-            _body.localPosition = _bodyDefaultLocal;
-            _head.localPosition = _headDefaultLocal;
-            _apparel.localPosition = _apparel.localPosition;
-            _hitLight = _body.GetComponentInChildren<Light2D>();
-        }
-        
         internal async void PlayAnimation(UnitAnimationSystem.States state)
         {
-            stopAnimations = true;
-            Debug.Log(state);
             switch (state)
             {
                 case Idle:
@@ -53,43 +40,41 @@ namespace Unit
         }
         private async Task PlayIdle()
         {
-            stopAnimations = false;
-            while (Application.isPlaying&&!stopAnimations)
+            while (Application.isPlaying)
             {
                 for (int i = 0; i < 100; i++)
                 {
-                    if (stopAnimations) break;
-                    LerpY(false,_head);
+                    LerpY(false,Head);
                     await Task.Delay(10);
                 }
                 for (int i = 0; i < 100; i++)
                 {
-                    if (stopAnimations) break;
-                    LerpY(true,_head);
+                    LerpY(true,Head);
                     await Task.Delay(10);
                 }
             }
         }
         private async Task PlayHit()
         {
-            stopAnimations = false;
+            if (!Application.isPlaying) return;
             await EnableHitLight();
         }
         private async Task PlayDeath()
         {
-            stopAnimations = false; 
-            await EnableHitLight(3000);
+            if (!Application.isPlaying) return;
             for (int i = 0; i < 100; i++)
             {
-                LerpZRotation(false, _body);
-                await Task.Delay(1);
+                if (!Application.isPlaying) return;
+                LerpMaterial(AllMaterials,MaterialProp,0);
+                LerpZRotation(false,Body);
+                await Task.Delay(30);
             } 
         }
         private async Task EnableHitLight(int delayMs=300)
         {
-            _hitLight.enabled = true;
+            HitLight.enabled = true;
             await Task.Delay(delayMs);
-            _hitLight.enabled = false;
+            HitLight.enabled = false;
         }
     }
 }

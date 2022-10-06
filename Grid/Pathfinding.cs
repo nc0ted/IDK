@@ -30,10 +30,10 @@ namespace Grid
         private HashSet<PathNode> openList;
         private HashSet<PathNode> closedList;
         
-        public Pathfinding(int width, int height)
+        public Pathfinding(int width, int height,float cellSize,Vector3 originPos)
         {
             Instance = this;
-            grid = new Grid<PathNode>(width, height, 1, Vector3.zero,
+            grid = new Grid<PathNode>(width, height, cellSize, originPos,
                 (Grid<PathNode> g, int x, int y) => new PathNode(g, x, y));
         }
 
@@ -47,23 +47,20 @@ namespace Grid
             grid.GetXY(startWorldPosition, out int startX, out int startY);
             grid.GetXY(endWorldPosition, out int endX, out int endY);
             if (!grid.GetGridObject(endX, endY).IsWalkable) return null;
-
+            
             HashSet<PathNode> path = FindPath(startX, startY, endX, endY);
             if (path == null)
             {
-                Debug.Log("NULLLLLLLLLA");
                 return null;
             }
-            else
+            HashSet<Vector3> vectorPath = new HashSet<Vector3>();
+            foreach (PathNode pathNode in path)
             {
-                HashSet<Vector3> vectorPath = new HashSet<Vector3>();
-                foreach (PathNode pathNode in path)
-                {
-                    vectorPath.Add(new Vector3(pathNode.x, pathNode.y) * grid.GetCellSize() +
-                                   Vector3.one * (grid.GetCellSize() *.5f));
-                }
-                return vectorPath;
+                vectorPath.Add(new Vector3(pathNode.x, pathNode.y) * grid.GetCellSize() +
+                               Vector3.one * (grid.GetCellSize() * .5f));
             }
+
+            return vectorPath;
         }
 
         public HashSet<PathNode> FindPath(int startX, int startY, int endX, int endY)

@@ -9,42 +9,59 @@ namespace Grid
         [SerializeField] private GameObject commonWall;
         [SerializeField] private Camera cam;
         [SerializeField] Sprite rightCornerWall, leftCornerWall, wallDownSprite;
+        [Tooltip("Use this, another not ready")]
         [SerializeField] private bool commonBuild = true;
-        
-        private Sprite commonSprite;
-        private Sprite currentSprite;
-        private int gridX, gridY;
-        private GameObject currentPrefab;
+
+        private InventoryItemText[] _itemsTexts;
+        private Sprite _commonSprite;
+        private Sprite _currentSprite;
+        private int _gridX, _gridY;
+        private GameObject _currentPrefab;
         private bool _isWalkable;
 
         private void Awake()
         {
-            currentPrefab = commonWall;
+            _itemsTexts = FindObjectsOfType<InventoryItemText>();
+            _currentPrefab = commonWall;
             if (!commonBuild)
             {
-                commonSprite = commonWall.GetComponent<SpriteRenderer>().sprite;
-                currentSprite = commonSprite;
+                _commonSprite = commonWall.GetComponent<SpriteRenderer>().sprite;
+                _currentSprite = _commonSprite;
             }
         }
-
         private void Update()
         {
             if (EventSystem.current.IsPointerOverGameObject()) return;
+            if (InventoryInfo.GetItemCount(_currentPrefab.GetComponent<InventoryItem>().Type) <= 0) return;
             if (Input.GetMouseButtonDown(0))
             {
+                InventoryInfo.DecrementCount(_currentPrefab.GetComponent<InventoryItem>().Type);
+                foreach (var item in _itemsTexts)
+                {
+                    item.UpdateText();
+                }
                 Vector3 mouseWorldPosition = cam.ScreenToWorldPoint(Input.mousePosition);
-                Pathfinding.Instance.GetGrid().GetXY(mouseWorldPosition, out gridX, out gridY);
-                Pathfinding.Instance.GetNode(gridX, gridY).SetIsWalkable(_isWalkable);
+                Pathfinding.Instance.GetGrid().GetXY(mouseWorldPosition, out _gridX, out _gridY);
+                var node = Pathfinding.Instance?.GetNode(_gridX, _gridY);
+                if (node == null) return;
+                Pathfinding.Instance?.GetNode(_gridX, _gridY)?.SetIsWalkable(_isWalkable);
                 Build();
             }
 
             if (Input.GetMouseButtonDown(1))
             {
                 Vector3 mouseWorldPosition = cam.ScreenToWorldPoint(Input.mousePosition);
-                Pathfinding.Instance.GetGrid().GetXY(mouseWorldPosition, out gridX, out gridY);
-                var node = Pathfinding.Instance.GetNode(gridX, gridY);
-                if(node.GameObject!=null) 
+                Pathfinding.Instance.GetGrid().GetXY(mouseWorldPosition, out _gridX, out _gridY);
+                var node = Pathfinding.Instance.GetNode(_gridX, _gridY);
+                if (node.GameObject != null)
+                {
+                    InventoryInfo.IncrementCount(node.GameObject.GetComponent<InventoryItem>().Type);
+                    foreach (var item in _itemsTexts)
+                    {
+                        item.UpdateText();
+                    }
                     node.GameObject.SetActive(false);
+                }
                 node.HasWall = false;
                 node.SetIsWalkable(true);
             }
@@ -52,39 +69,38 @@ namespace Grid
 
         private void Build()
         {
-            if (Pathfinding.Instance.GetNode(gridX, gridY).HasWall) return;
-            var position = Pathfinding.Instance.GetGrid().GetWorldPosition(gridX, gridY) + new Vector3(1, 1) * 0.5f;
-            var wall = Instantiate(currentPrefab, position, quaternion.identity);
-            Pathfinding.Instance.GetNode(gridX, gridY).SetHasWall(!_isWalkable);
-            Pathfinding.Instance.GetNode(gridX, gridY).GameObject = wall;
+            if (Pathfinding.Instance.GetNode(_gridX, _gridY).HasWall) return;
+            var position = Pathfinding.Instance.GetGrid().GetWorldPosition(_gridX, _gridY) + new Vector3(1, 1) * 0.5f;
+            var wall = Instantiate(_currentPrefab, position, quaternion.identity);
+            Pathfinding.Instance.GetNode(_gridX, _gridY).SetHasWall(!_isWalkable);
+            Pathfinding.Instance.GetNode(_gridX, _gridY).GameObject = wall;
             
             if (commonBuild) return;
-            if (Pathfinding.Instance.GetNode(gridX, gridY + 1).HasWall &&
-                Pathfinding.Instance.GetNode(gridX - 1, gridY + 1).HasWall)
+            if (Pathfinding.Instance.GetNode(_gridX, _gridY + 1).HasWall &&
+                Pathfinding.Instance.GetNode(_gridX - 1, _gridY + 1).HasWall)
             {
-                currentSprite = wallDownSprite;
-                Pathfinding.Instance.GetNode(gridX, gridY + 1).SetSprite(rightCornerWall);
+                _currentSprite = wallDownSprite;
+                Pathfinding.Instance.GetNode(_gridX, _gridY + 1).SetSprite(rightCornerWall);
             }
 
-            if (Pathfinding.Instance.GetNode(gridX, gridY + 1).HasWall &&
-                Pathfinding.Instance.GetNode(gridX + 1, gridY + 1).HasWall)
+            if (Pathfinding.Instance.GetNode(_gridX, _gridY + 1).HasWall &&
+                Pathfinding.Instance.GetNode(_gridX + 1, _gridY + 1).HasWall)
             {
-                currentSprite = wallDownSprite;
-                Pathfinding.Instance.GetNode(gridX, gridY + 1).SetSprite(leftCornerWall);
+                _currentSprite = wallDownSprite;
+                Pathfinding.Instance.GetNode(_gridX, _gridY + 1).SetSprite(leftCornerWall);
                 wall.transform.localRotation = new Quaternion(0, 0, -180, 0);
             }
 
-            if (!Pathfinding.Instance.GetNode(gridX, gridY + 1).HasWall)
+            if (!Pathfinding.Instance.GetNode(_gridX, _gridY + 1).HasWall)
             {
-                currentSprite = commonSprite;
+                _currentSprite = _commonSprite;
             }
-
-            wall.GetComponent<SpriteRenderer>().sprite = currentSprite;
+            wall.GetComponent<SpriteRenderer>().sprite = _currentSprite;
         }
 
         internal void SetPrefab(GameObject prefab, bool isWalkable)
         {
-            currentPrefab = prefab;
+            _currentPrefab = prefab;
             _isWalkable = isWalkable;
         }
     }

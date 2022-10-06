@@ -5,6 +5,7 @@ public class CameraControl : MonoBehaviour
     [SerializeField] private float scaleMultiplier;
     [SerializeField] private float moveSpeed;
     [SerializeField] private float maxScale=15, minScale=5;
+    [SerializeField] private bool enableMoveByKeyboard;
     
     private Camera cam;
 
@@ -19,7 +20,9 @@ public class CameraControl : MonoBehaviour
             cam.orthographicSize -=  Time.deltaTime * scaleMultiplier;
         if(Input.GetAxis("Mouse ScrollWheel")<0&&cam.orthographicSize<=maxScale)
             cam.orthographicSize +=  Time.deltaTime * scaleMultiplier;
-
+        
+        if (!enableMoveByKeyboard) return;
+        
         float horizontal = Input.GetAxis("Horizontal");
         float vertical = Input.GetAxis("Vertical");
         transform.position +=

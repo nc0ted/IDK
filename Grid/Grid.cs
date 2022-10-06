@@ -110,6 +110,5 @@ namespace Grid
             GetXY(worldPosition, out x, out y);
             return GetGridObject(x, y);
         }
-
     }
 }

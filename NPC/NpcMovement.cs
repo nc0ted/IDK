@@ -32,7 +32,6 @@ namespace NPC
         {
             if (pathVectorList != null)
             {
-                _animationSystem.SetAnimationState(None);
                 Vector3 targetPosition = pathVectorList[currentPathIndex];
                 if (Vector3.Distance(transform.position, targetPosition) > 0.05f)
                 {
@@ -73,6 +72,10 @@ namespace NPC
             if (pathVectorList != null && pathVectorList.Count > 1)
             {
                 pathVectorList.RemoveAt(0);
+            }
+            if (pathVectorList == null)
+            {
+                GameUiManager.Instance.ShowWarningText("Dont find a path");
             }
         }
 
