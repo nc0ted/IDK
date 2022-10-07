@@ -40,6 +40,8 @@ public class UnitHealthSystem : MonoBehaviour
             Destroy(gameObject,3);
         else
             Invoke(nameof(DeactivateUnit),3f);
+        Target.Instance.DecrementNpcCount();
+        WavesManager.Instance.CheckForWin();
     }
 
     private void DeactivateUnit()

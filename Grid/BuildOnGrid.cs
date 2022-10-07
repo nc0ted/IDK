@@ -13,6 +13,7 @@ namespace Grid
         [SerializeField] private bool commonBuild = true;
 
         private InventoryItemText[] _itemsTexts;
+        private ItemTypes _currentType;
         private Sprite _commonSprite;
         private Sprite _currentSprite;
         private int _gridX, _gridY;
@@ -23,6 +24,7 @@ namespace Grid
         {
             _itemsTexts = FindObjectsOfType<InventoryItemText>();
             _currentPrefab = commonWall;
+            _currentType = ItemTypes.Wall;
             if (!commonBuild)
             {
                 _commonSprite = commonWall.GetComponent<SpriteRenderer>().sprite;
@@ -32,10 +34,10 @@ namespace Grid
         private void Update()
         {
             if (EventSystem.current.IsPointerOverGameObject()) return;
-            if (InventoryInfo.GetItemCount(_currentPrefab.GetComponent<InventoryItem>().Type) <= 0) return;
             if (Input.GetMouseButtonDown(0))
             {
-                InventoryInfo.DecrementCount(_currentPrefab.GetComponent<InventoryItem>().Type);
+                if (InventoryInfo.GetItemCount(_currentType) <= 0) return;
+                InventoryInfo.DecrementCount(_currentType);
                 foreach (var item in _itemsTexts)
                 {
                     item.UpdateText();
@@ -47,15 +49,14 @@ namespace Grid
                 Pathfinding.Instance?.GetNode(_gridX, _gridY)?.SetIsWalkable(_isWalkable);
                 Build();
             }
-
             if (Input.GetMouseButtonDown(1))
             {
                 Vector3 mouseWorldPosition = cam.ScreenToWorldPoint(Input.mousePosition);
                 Pathfinding.Instance.GetGrid().GetXY(mouseWorldPosition, out _gridX, out _gridY);
                 var node = Pathfinding.Instance.GetNode(_gridX, _gridY);
-                if (node.GameObject != null)
+                if (node.GameObject != null&&node.GameObject.GetComponent<InventoryItem>().Type==_currentType)
                 {
-                    InventoryInfo.IncrementCount(node.GameObject.GetComponent<InventoryItem>().Type);
+                    InventoryInfo.IncrementCount(_currentType);
                     foreach (var item in _itemsTexts)
                     {
                         item.UpdateText();
@@ -74,8 +75,9 @@ namespace Grid
             var wall = Instantiate(_currentPrefab, position, quaternion.identity);
             Pathfinding.Instance.GetNode(_gridX, _gridY).SetHasWall(!_isWalkable);
             Pathfinding.Instance.GetNode(_gridX, _gridY).GameObject = wall;
-            
-            if (commonBuild) return;
+             wall.GetComponent<AudioSource>().Play();
+          
+             if (commonBuild) return;
             if (Pathfinding.Instance.GetNode(_gridX, _gridY + 1).HasWall &&
                 Pathfinding.Instance.GetNode(_gridX - 1, _gridY + 1).HasWall)
             {
@@ -95,12 +97,13 @@ namespace Grid
             {
                 _currentSprite = _commonSprite;
             }
-            wall.GetComponent<SpriteRenderer>().sprite = _currentSprite;
+            // wall.GetComponent<SpriteRenderer>().sprite = _currentSprite;
         }
 
         internal void SetPrefab(GameObject prefab, bool isWalkable)
         {
             _currentPrefab = prefab;
+            _currentType = _currentPrefab.GetComponent<InventoryItem>().Type;
             _isWalkable = isWalkable;
         }
     }

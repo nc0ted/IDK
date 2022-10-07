@@ -4,6 +4,7 @@ using System.Linq;
 using Grid;
 using Unit;
 using UnityEngine;
+using UnityEngine.UI;
 
 namespace NPC
 {
@@ -11,16 +12,17 @@ namespace NPC
     {
         [SerializeField] private float speed = 4f;
         [SerializeField] private Transform targetPos;
+        [SerializeField] private Button startWaveButton;
         
         private UnitAnimationSystem _animationSystem;
-        private UnitDirections directions;
-        private int currentPathIndex;
-        private List<Vector3> pathVectorList;
+        private UnitDirections _directions;
+        private int _currentPathIndex;
+        private List<Vector3> _pathVectorList;
 
         private void Awake()
         {
             _animationSystem = GetComponent<UnitAnimationSystem>();
-            directions = GetComponent<UnitDirections>();
+            _directions = GetComponent<UnitDirections>();
         }
 
         private void Update()
@@ -30,14 +32,14 @@ namespace NPC
 
         private void HandleMovement()
         {
-            if (pathVectorList != null)
+            if (_pathVectorList != null)
             {
-                Vector3 targetPosition = pathVectorList[currentPathIndex];
+                Vector3 targetPosition = _pathVectorList[_currentPathIndex];
                 if (Vector3.Distance(transform.position, targetPosition) > 0.05f)
                 {
                     var position = transform.position;
                     Vector3 moveDir = (targetPosition - position).normalized;
-                    directions.MoveDir = moveDir;
+                    _directions.MoveDir = moveDir;
                     // float distanceBefore = Vector3.Distance(position, targetPosition);
                     position += moveDir * (speed * Time.deltaTime);
 
@@ -45,8 +47,8 @@ namespace NPC
                 }
                 else
                 {
-                    currentPathIndex++;
-                    if (currentPathIndex >= pathVectorList.Count)
+                    _currentPathIndex++;
+                    if (_currentPathIndex >= _pathVectorList.Count)
                     {
                         StopMoving();
                     }
@@ -60,23 +62,27 @@ namespace NPC
 
         private void StopMoving()
         {
-            pathVectorList = null;
+            Target.Instance.CheckForLose();
+            startWaveButton.enabled = true;
+            _pathVectorList = null;
         }
 
         public void SetTargetPosition()
         {
-            currentPathIndex = 0;
+            _currentPathIndex = 0;
 
-            pathVectorList = Pathfinding.Instance.FindPath(transform.position, targetPos.position)?.ToList();
+            _pathVectorList = Pathfinding.Instance.FindPath(transform.position, targetPos.position)?.ToList();
 
-            if (pathVectorList != null && pathVectorList.Count > 1)
+            if (_pathVectorList != null && _pathVectorList.Count > 1)
             {
-                pathVectorList.RemoveAt(0);
+                startWaveButton.enabled = false;
+                _pathVectorList.RemoveAt(0);
             }
-            if (pathVectorList == null)
+            if (_pathVectorList == null)
             {
                 GameUiManager.Instance.ShowWarningText("Dont find a path");
             }
+            Invoke(nameof(SetTargetPosition),1.5f);
         }
 
         internal void SetSpeed(float newSpeed)
