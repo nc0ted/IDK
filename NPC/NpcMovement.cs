@@ -12,8 +12,7 @@ namespace NPC
     {
         [SerializeField] private float speed = 4f;
         [SerializeField] private Transform targetPos;
-        [SerializeField] private Button startWaveButton;
-        
+
         private UnitAnimationSystem _animationSystem;
         private UnitDirections _directions;
         private int _currentPathIndex;
@@ -63,7 +62,6 @@ namespace NPC
         private void StopMoving()
         {
             Target.Instance.CheckForLose();
-            startWaveButton.enabled = true;
             _pathVectorList = null;
         }
 
@@ -75,12 +73,11 @@ namespace NPC
 
             if (_pathVectorList != null && _pathVectorList.Count > 1)
             {
-                startWaveButton.enabled = false;
                 _pathVectorList.RemoveAt(0);
             }
             if (_pathVectorList == null)
             {
-                GameUiManager.Instance.ShowWarningText("Dont find a path");
+                LevelUiManager.Instance.ShowWarningText("Dont find a path");
             }
             Invoke(nameof(SetTargetPosition),1.5f);
         }

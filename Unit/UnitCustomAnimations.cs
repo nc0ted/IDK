@@ -1,6 +1,3 @@
-using System.Threading.Tasks;
-using Unity.Mathematics;
-using UnityEditor;
 using UnityEngine;
 using UnityEngine.Rendering.Universal;
 using static Unit.UnitAnimationSystem.States;
@@ -70,7 +67,7 @@ namespace Unit
                 await Task.Delay(30);
             } 
         }
-        private async Task EnableHitLight(int delayMs=300)
+        private async Task EnableHitLight(int delayMs=100)
         {
             HitLight.enabled = true;
             await Task.Delay(delayMs);

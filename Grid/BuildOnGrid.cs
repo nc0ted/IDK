@@ -54,7 +54,7 @@ namespace Grid
                 Vector3 mouseWorldPosition = cam.ScreenToWorldPoint(Input.mousePosition);
                 Pathfinding.Instance.GetGrid().GetXY(mouseWorldPosition, out _gridX, out _gridY);
                 var node = Pathfinding.Instance.GetNode(_gridX, _gridY);
-                if (node.GameObject != null&&node.GameObject.GetComponent<InventoryItem>().Type==_currentType)
+                if (node.GameObject != null&&node.GameObject.activeInHierarchy&&node.GameObject.GetComponent<InventoryItem>().Type==_currentType)
                 {
                     InventoryInfo.IncrementCount(_currentType);
                     foreach (var item in _itemsTexts)
@@ -62,6 +62,11 @@ namespace Grid
                         item.UpdateText();
                     }
                     node.GameObject.SetActive(false);
+                }
+                else
+                {
+                    print(_currentType);
+                    print(node.GameObject);
                 }
                 node.HasWall = false;
                 node.SetIsWalkable(true);
@@ -75,7 +80,7 @@ namespace Grid
             var wall = Instantiate(_currentPrefab, position, quaternion.identity);
             Pathfinding.Instance.GetNode(_gridX, _gridY).SetHasWall(!_isWalkable);
             Pathfinding.Instance.GetNode(_gridX, _gridY).GameObject = wall;
-             wall.GetComponent<AudioSource>().Play();
+            wall.GetComponent<AudioSource>().Play();
           
              if (commonBuild) return;
             if (Pathfinding.Instance.GetNode(_gridX, _gridY + 1).HasWall &&

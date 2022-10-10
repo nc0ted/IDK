@@ -2,9 +2,9 @@ using System;
 using TMPro;
 using UnityEngine;
 
-public class GameUiManager : MonoBehaviour
+public class LevelUiManager : MonoBehaviour
 {
-    public static GameUiManager Instance=null;
+    public static LevelUiManager Instance=null;
     [SerializeField] private TMP_Text warningText;
     [SerializeField] private TMP_Text levelResultsText;
     [SerializeField] private GameObject levelResultsTextGo;
@@ -24,6 +24,7 @@ public class GameUiManager : MonoBehaviour
     internal void ShowLevelResultsText(string text,Color color=default)
     {
        // warningTextAnimator.Play("LevelResultsText");
+        if (levelResultsTextGo.activeInHierarchy) return;
         levelResultsTextGo.SetActive(true);
         levelResultsText.text = text;
         levelResultsText.color = color;
